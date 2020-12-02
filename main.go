@@ -2,27 +2,26 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"time"
+
+	"github.com/0xcafed00d/joystick"
 )
 
 func main() {
-	f, err := os.Open("/dev/input/event0")
+	js, err := joystick.Open(0)
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
-	b := make([]byte, 200)
+	defer js.Close()
+	fmt.Printf("Joystick Name: %s", js.Name())
+	fmt.Printf("   Axis Count: %d", js.AxisCount())
+	fmt.Printf(" Button Count: %d", js.ButtonCount())
 	for {
-		n, _ := f.Read(b)
-		fmt.Println(n)
-		// sec := binary.LittleEndian.Uint64(b[0:8])
-		// usec := binary.LittleEndian.Uint64(b[8:16])
-		// t := time.Unix(int64(sec), int64(usec))
-		// fmt.Println(t)
-		// var value int32
-		// typ := binary.LittleEndian.Uint16(b[16:18])
-		// code := binary.LittleEndian.Uint16(b[18:20])
-		// binary.Read(bytes.NewReader(b[20:]), binary.LittleEndian, &value)
-		// fmt.Printf("type: %x\ncode: %d\nvalue: %d\n", typ, code, value)
+		state, err := js.Read()
+		if err != nil {
+			panic(err)
+		}
+		time.Sleep(time.Millisecond * 100)
+		fmt.Printf("Axis Data: %v -- Buttons Data: %v\n", state.AxisData, state.Buttons)
 	}
 }
