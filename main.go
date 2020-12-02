@@ -1,27 +1,26 @@
 package main
 
 import (
-	"fmt"
+	"os"
 	"time"
 
-	"github.com/0xcafed00d/joystick"
+	"github.com/bbayszczak/rodney/pkg/drivers/switchprocontroller"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	js, err := joystick.Open(0)
-	if err != nil {
-		panic(err)
+	log.SetLevel(log.DebugLevel)
+	file, err := os.OpenFile("rodney.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		log.SetOutput(file)
+		defer file.Close()
+	} else {
+		log.Info("Failed to log to file, using default stderr")
 	}
-	defer js.Close()
-	fmt.Printf("Joystick Name: %s", js.Name())
-	fmt.Printf("   Axis Count: %d", js.AxisCount())
-	fmt.Printf(" Button Count: %d", js.ButtonCount())
+	controller := switchprocontroller.NewSwitchProController()
+	controller.StartListener(0)
 	for {
-		state, err := js.Read()
-		if err != nil {
-			panic(err)
-		}
-		time.Sleep(time.Millisecond * 100)
-		fmt.Printf("Axis Data: %v -- Buttons Data: %v\n", state.AxisData, state.Buttons)
+		controller.Display()
+		time.Sleep(100 * time.Millisecond)
 	}
 }

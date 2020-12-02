@@ -21,7 +21,7 @@ transfer: build
 	$(SCP) $(NAME) $(PI_USER)@$(PI_HOST):$(NAME)
 
 run: transfer
-	$(SSH) $(PI_USER)@$(PI_HOST) ./$(NAME)
+	$(SSH) $(PI_USER)@$(PI_HOST) "bash -c ./$(NAME)"
 
 fclean:
 	$(RM) $(NAME)
