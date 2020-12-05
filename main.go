@@ -3,7 +3,6 @@ package main
 import (
 	"math"
 	"os"
-	"time"
 
 	"github.com/bbayszczak/rodney/pkg/drivers/led"
 	"github.com/bbayszczak/rodney/pkg/drivers/switchprocontroller"
@@ -33,36 +32,37 @@ func main() {
 	controller := switchprocontroller.NewSwitchProController()
 	controller.StartListener(0)
 	for {
-		// controller.Display()
-		switch controller.ButtonA {
-		case 1:
-			red.On()
-		default:
-			red.Off()
+		select {
+		case <-controller.Event:
+			switch controller.ButtonA {
+			case 1:
+				red.On()
+			default:
+				red.Off()
+			}
+			switch controller.ButtonB {
+			case 1:
+				green.On()
+			default:
+				green.Off()
+			}
+			switch controller.ButtonX {
+			case 1:
+				blue.On()
+			default:
+				blue.Off()
+			}
+			switch controller.ButtonY {
+			case 1:
+				yellow.On()
+			default:
+				yellow.Off()
+			}
+			brightnessVal := (int(math.Abs(float64(controller.StickLeft.X)) + math.Abs(float64(controller.StickLeft.Y))))
+			if brightnessVal > 100 {
+				brightnessVal = 100
+			}
+			white.SetBrightness(brightnessVal)
 		}
-		switch controller.ButtonB {
-		case 1:
-			green.On()
-		default:
-			green.Off()
-		}
-		switch controller.ButtonX {
-		case 1:
-			blue.On()
-		default:
-			blue.Off()
-		}
-		switch controller.ButtonY {
-		case 1:
-			yellow.On()
-		default:
-			yellow.Off()
-		}
-		brightnessVal := (int(math.Abs(float64(controller.StickLeft.X)) + math.Abs(float64(controller.StickLeft.Y))))
-		if brightnessVal > 100 {
-			brightnessVal = 100
-		}
-		white.SetBrightness(brightnessVal)
-		time.Sleep(50 * time.Millisecond)
 	}
 }
