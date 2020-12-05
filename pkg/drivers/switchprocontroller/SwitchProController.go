@@ -12,7 +12,7 @@ import (
 const (
 	stickMax   float32       = 28500
 	stickMin   float32       = -29735
-	fetchDelay time.Duration = 50 * time.Millisecond
+	fetchDelay time.Duration = 10 * time.Millisecond
 )
 
 // SwitchProController represent the physical controller
