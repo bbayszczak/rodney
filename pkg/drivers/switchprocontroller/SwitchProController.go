@@ -17,7 +17,7 @@ const (
 // SwitchProController represent the physical controller
 //
 type SwitchProController struct {
-	FetchDelta time.Duration
+	fetchDelta time.Duration
 	// each time a new event is received, true is sent to this channel
 	Event chan bool `json:"-"`
 	// Sticks list
@@ -185,7 +185,7 @@ func initButton(name string, code uint32) *Button {
 func NewSwitchProController() *SwitchProController {
 	log.Info("creating new SwitchProController")
 	controller := SwitchProController{
-		FetchDelta: fetchDelta,
+		fetchDelta: fetchDelta,
 		Event:      make(chan bool, 1),
 		Sticks: []*Stick{
 			initStick("left"),
