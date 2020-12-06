@@ -14,7 +14,7 @@ func Example_nonBlocking() {
 		// displays full controller state
 		controller.Display()
 		// display button A state
-		fmt.Println(controller.ButtonA)
+		fmt.Println(controller.GetButtonState("a"))
 		time.Sleep(100 * time.Millisecond)
 	}
 }
@@ -28,7 +28,7 @@ func Example_blocking() {
 			// displays full controller state
 			controller.Display()
 			// display button A state
-			fmt.Println(controller.ButtonA)
+			fmt.Println(controller.GetButtonState("a"))
 		}
 	}
 }

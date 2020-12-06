@@ -15,25 +15,15 @@ const (
 )
 
 // SwitchProController represent the physical controller
+//
 type SwitchProController struct {
 	FetchDelta time.Duration
 	// each time a new event is received, true is sent to this channel
-	Event            chan bool `json:"-"`
-	Sticks           []*Stick
-	ButtonB          int
-	ButtonA          int
-	ButtonY          int
-	ButtonX          int
-	ButtonL          int
-	ButtonR          int
-	ButtonZL         int
-	ButtonZR         int
-	ButtonLess       int
-	ButtonPlus       int
-	ButtonLeftStick  int
-	ButtonRightStick int
-	ButtonHome       int
-	ButtonCapture    int
+	Event chan bool `json:"-"`
+	// Sticks list
+	Sticks []*Stick
+	// Buttons list
+	Buttons []*Button
 }
 
 // Stick represent a physical stick
@@ -51,6 +41,17 @@ type Stick struct {
 	yMax float32
 }
 
+// Button represent a physical button
+//
+// There's two possible State
+// 1: button pressed
+// 0: button released
+type Button struct {
+	Name  string
+	State int
+	code  uint32
+}
+
 // GetStick returns a pointer to a Stick instance with specified name
 //
 // err not nil if stick name not found
@@ -61,6 +62,34 @@ func (controller *SwitchProController) GetStick(name string) (*Stick, error) {
 		}
 	}
 	return nil, fmt.Errorf("impossible to find stick")
+}
+
+// GetButton returns a pointer to a Button instance with specified name
+//
+// err not nil if button name not found
+func (controller *SwitchProController) GetButton(name string) (*Button, error) {
+	for _, button := range controller.Buttons {
+		if button.Name == name {
+			return button, nil
+		}
+	}
+	return nil, fmt.Errorf("impossible to find button")
+}
+
+// GetButtonState returns the state of the button with specified name
+//
+// returns:
+// 0: button released
+// 1: button pressed
+//
+// err not nil if button name not found
+func (controller *SwitchProController) GetButtonState(name string) (int, error) {
+	for _, button := range controller.Buttons {
+		if button.Name == name {
+			return button.State, nil
+		}
+	}
+	return 0, fmt.Errorf("impossible to find button")
 }
 
 func (controller *SwitchProController) updateStick(name string, x float32, y float32) {
@@ -117,86 +146,17 @@ func (controller *SwitchProController) updateSticks(axisData []int) {
 	controller.updateStick("pad", float32(axisData[4]), float32(axisData[5]))
 }
 
-func (controller *SwitchProController) updateButtons(buttons uint32) {
-	values := []uint32{8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1}
-	for _, val := range values {
-		var isPressed int
-		isPressed = 0
-		if buttons >= val {
-			buttons = buttons - val
-			isPressed = 1
+func (controller *SwitchProController) updateButtons(buttonsValue uint32) {
+	for _, button := range controller.Buttons {
+		previousState := button.State
+		if buttonsValue >= button.code {
+			button.State = 1
+			buttonsValue = buttonsValue - button.code
+		} else {
+			button.State = 0
 		}
-		switch val {
-		case 8192:
-			if controller.ButtonCapture != isPressed {
-				controller.eventChange()
-				controller.ButtonCapture = isPressed
-			}
-		case 4096:
-			if controller.ButtonHome != isPressed {
-				controller.eventChange()
-				controller.ButtonHome = isPressed
-			}
-		case 2048:
-			if controller.ButtonRightStick != isPressed {
-				controller.eventChange()
-				controller.ButtonRightStick = isPressed
-			}
-		case 1024:
-			if controller.ButtonLeftStick != isPressed {
-				controller.eventChange()
-				controller.ButtonLeftStick = isPressed
-			}
-		case 512:
-			if controller.ButtonPlus != isPressed {
-				controller.eventChange()
-				controller.ButtonPlus = isPressed
-			}
-		case 256:
-			if controller.ButtonLess != isPressed {
-				controller.eventChange()
-				controller.ButtonLess = isPressed
-			}
-		case 128:
-			if controller.ButtonZR != isPressed {
-				controller.eventChange()
-				controller.ButtonZR = isPressed
-			}
-		case 64:
-			if controller.ButtonZL != isPressed {
-				controller.eventChange()
-				controller.ButtonZL = isPressed
-			}
-		case 32:
-			if controller.ButtonR != isPressed {
-				controller.eventChange()
-				controller.ButtonR = isPressed
-			}
-		case 16:
-			if controller.ButtonL != isPressed {
-				controller.eventChange()
-				controller.ButtonL = isPressed
-			}
-		case 8:
-			if controller.ButtonX != isPressed {
-				controller.eventChange()
-				controller.ButtonX = isPressed
-			}
-		case 4:
-			if controller.ButtonY != isPressed {
-				controller.eventChange()
-				controller.ButtonY = isPressed
-			}
-		case 2:
-			if controller.ButtonA != isPressed {
-				controller.eventChange()
-				controller.ButtonA = isPressed
-			}
-		case 1:
-			if controller.ButtonB != isPressed {
-				controller.eventChange()
-				controller.ButtonB = isPressed
-			}
+		if button.State != previousState {
+			controller.eventChange()
 		}
 	}
 }
@@ -213,6 +173,14 @@ func initStick(name string) *Stick {
 	}
 }
 
+func initButton(name string, code uint32) *Button {
+	return &Button{
+		Name:  name,
+		State: 0,
+		code:  code,
+	}
+}
+
 // NewSwitchProController creates and initialize a SwitchProController instance
 func NewSwitchProController() *SwitchProController {
 	log.Info("creating new SwitchProController")
@@ -223,6 +191,22 @@ func NewSwitchProController() *SwitchProController {
 			initStick("left"),
 			initStick("right"),
 			initStick("pad"),
+		},
+		Buttons: []*Button{
+			initButton("capture", 8192),
+			initButton("home", 4096),
+			initButton("rs", 2048), // right stick
+			initButton("ls", 1024), // left stick
+			initButton("+", 512),
+			initButton("-", 256),
+			initButton("zr", 128),
+			initButton("zl", 64),
+			initButton("r", 32),
+			initButton("l", 16),
+			initButton("x", 8),
+			initButton("y", 4),
+			initButton("a", 2),
+			initButton("b", 1),
 		},
 	}
 	return &controller
