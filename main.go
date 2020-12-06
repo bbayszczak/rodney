@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/bbayszczak/rodney/pkg/drivers/switchprocontroller"
@@ -21,7 +22,12 @@ func main() {
 	for {
 		select {
 		case <-controller.Event:
-			controller.Display()
+			// display button A state
+			aState, _ := controller.GetButtonState("a")
+			fmt.Printf("A:%d\n", aState)
+			// display left stick position
+			leftStick, _ := controller.GetStick("left")
+			fmt.Printf("x:%f - y:%f\n", leftStick.X, leftStick.Y)
 		}
 	}
 }

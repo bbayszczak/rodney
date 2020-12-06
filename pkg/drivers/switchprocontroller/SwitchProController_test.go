@@ -11,12 +11,18 @@ func Example_nonBlocking() {
 	controller := switchprocontroller.NewSwitchProController()
 	controller.StartListener(0)
 	for {
-		// displays full controller state
-		controller.Display()
 		// display button A state
-		fmt.Println(controller.GetButtonState("a"))
+		aState, _ := controller.GetButtonState("a")
+		fmt.Printf("A:%d\n", aState)
+		// display left stick position
+		leftStick, _ := controller.GetStick("left")
+		fmt.Printf("x:%f - y:%f\n", leftStick.X, leftStick.Y)
 		time.Sleep(100 * time.Millisecond)
 	}
+	// Output:
+	// A:0
+	// x:0.000000 - y:0.000000
+	// [...]
 }
 
 func Example_blocking() {
@@ -25,10 +31,15 @@ func Example_blocking() {
 	for {
 		select {
 		case <-controller.Event:
-			// displays full controller state
-			controller.Display()
 			// display button A state
-			fmt.Println(controller.GetButtonState("a"))
+			aState, _ := controller.GetButtonState("a")
+			fmt.Printf("A:%d\n", aState)
+			// display left stick position
+			leftStick, _ := controller.GetStick("left")
+			fmt.Printf("x:%f - y:%f\n", leftStick.X, leftStick.Y)
 		}
 	}
+	// Output:
+	// A:0
+	// x:0.000000 - y:0.000000
 }
