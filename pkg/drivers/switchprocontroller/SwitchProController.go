@@ -10,9 +10,8 @@ import (
 )
 
 const (
-	stickMax   float32       = 28500
-	stickMin   float32       = -29735
-	fetchDelta time.Duration = 10 * time.Millisecond
+	stickPeakValue float32       = 20000
+	fetchDelta     time.Duration = 10 * time.Millisecond
 )
 
 // SwitchProController represent the physical controller
@@ -20,9 +19,7 @@ type SwitchProController struct {
 	FetchDelta time.Duration
 	// each time a new event is received, true is sent to this channel
 	Event            chan bool `json:"-"`
-	StickLeft        Stick
-	StickRight       Stick
-	StickPad         Stick
+	Sticks           []*Stick
 	ButtonB          int
 	ButtonA          int
 	ButtonY          int
@@ -41,43 +38,83 @@ type SwitchProController struct {
 
 // Stick represent a physical stick
 //
-// It contains a value for each axis (x and y), this value is contained between -100 and 100
+// It contains a value (in %) for each axis (x and y), this value is contained between -100 and 100
 //
 // 0 is the default value when the stick is in the default position
 type Stick struct {
-	X float32
-	Y float32
+	Name string
+	X    float32
+	Y    float32
+	xMin float32
+	xMax float32
+	yMin float32
+	yMax float32
 }
 
-func setAxisValue(axis *float32, value float32, controller *SwitchProController) {
-	if value > 100 {
-		if *axis != 100.0 {
-			controller.eventChange()
+// GetStick returns a pointer to a Stick instance with specified name
+//
+// err not nil if stick name not found
+func (controller *SwitchProController) GetStick(name string) (*Stick, error) {
+	for _, stick := range controller.Sticks {
+		if stick.Name == name {
+			return stick, nil
 		}
-		*axis = 100.0
-	} else if value < -100 {
-		if *axis != -100.0 {
-			controller.eventChange()
-		}
-		*axis = -100.0
-	} else {
-		if *axis != value {
-			controller.eventChange()
-		}
-		*axis = value
+	}
+	return nil, fmt.Errorf("impossible to find stick")
+}
+
+func (controller *SwitchProController) updateStick(name string, x float32, y float32) {
+	stick, err := controller.GetStick(name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+			"name":  name,
+		}).Error("stick not found")
+	}
+	if x < stick.xMin {
+		stick.xMin = x
+		log.WithField("stick.xMin", x).Info("stick peak value changed")
+	} else if x > stick.xMax {
+		stick.xMax = x
+		log.WithField("stick.xMax", x).Info("stick peak value changed")
+	}
+	if y < stick.yMin {
+		stick.yMin = y
+		log.WithField("stick.yMin", y).Info("stick peak value changed")
+	} else if y > stick.yMax {
+		stick.yMax = y
+		log.WithField("stick.yMax", y).Info("stick peak value changed")
+	}
+	var newX float32
+	var newY float32
+	if x > 0 {
+		newX = (100.0 * x) / stick.xMax
+	} else if x < 0 {
+		newX = (-100.0 * x) / stick.xMin
+	} else if x == 0 {
+		newX = 0
+	}
+	if newX != stick.X {
+		stick.X = newX
+		controller.eventChange()
+	}
+	if y > 0 {
+		newY = (-100.0 * y) / stick.yMax
+	} else if y < 0 {
+		newY = (100.0 * y) / stick.yMin
+	} else if y == 0 {
+		newY = 0
+	}
+	if newY != stick.Y {
+		stick.Y = newY
+		controller.eventChange()
 	}
 }
 
 func (controller *SwitchProController) updateSticks(axisData []int) {
-	// Left stick update
-	setAxisValue(&controller.StickLeft.X, (-100.0*float32(axisData[0]))/stickMin, controller)
-	setAxisValue(&controller.StickLeft.Y, (100.0*float32(axisData[1]))/stickMax, controller)
-	// Right stick update
-	setAxisValue(&controller.StickRight.X, (-100.0*float32(axisData[2]))/stickMin, controller)
-	setAxisValue(&controller.StickRight.Y, (100.0*float32(axisData[3]))/stickMax, controller)
-	// DPad update
-	setAxisValue(&controller.StickPad.X, (-100.0*float32(axisData[4]))/stickMin, controller)
-	setAxisValue(&controller.StickPad.Y, (100.0*float32(axisData[5]))/stickMax, controller)
+	controller.updateStick("left", float32(axisData[0]), float32(axisData[1]))
+	controller.updateStick("right", float32(axisData[2]), float32(axisData[3]))
+	controller.updateStick("pad", float32(axisData[4]), float32(axisData[5]))
 }
 
 func (controller *SwitchProController) updateButtons(buttons uint32) {
@@ -164,12 +201,29 @@ func (controller *SwitchProController) updateButtons(buttons uint32) {
 	}
 }
 
-// NewSwitchProController creates and init a SwitchProController instance
+func initStick(name string) *Stick {
+	return &Stick{
+		Name: name,
+		X:    0,
+		Y:    0,
+		xMin: -stickPeakValue,
+		xMax: stickPeakValue,
+		yMin: -stickPeakValue,
+		yMax: stickPeakValue,
+	}
+}
+
+// NewSwitchProController creates and initialize a SwitchProController instance
 func NewSwitchProController() *SwitchProController {
 	log.Info("creating new SwitchProController")
 	controller := SwitchProController{
 		FetchDelta: fetchDelta,
 		Event:      make(chan bool, 1),
+		Sticks: []*Stick{
+			initStick("left"),
+			initStick("right"),
+			initStick("pad"),
+		},
 	}
 	return &controller
 }
