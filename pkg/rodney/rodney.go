@@ -44,20 +44,38 @@ func NewRodney() *Rodney {
 	return &rodney
 }
 
-func initMotors() {
-
+func (rodney *Rodney) initMotors() error {
+	log.Info("initializing motors")
+	var err error
+	chip := l293d.NewL293D()
+	if rodney.rightMotor, err = chip.NewMotor(1, motor1EnPin, motor1aPin, motor1bPin); err != nil {
+		log.WithField("error", err).Error("impossible to initialize motor 1")
+		return err
+	}
+	log.Info("motor 1 initialized")
+	if rodney.leftMotor, err = chip.NewMotor(2, motor2EnPin, motor2aPin, motor2bPin); err != nil {
+		log.WithField("error", err).Error("impossible to initialize motor 2")
+		return err
+	}
+	log.Info("motor 2 initialized")
+	log.Info("all motors successfully initialized")
+	return nil
 }
 
-func (rodney *Rodney) fatalError(err error) {
-	log.WithField("error", err).Fatal("a fatal error occured")
+func (rodney *Rodney) handleFatal() {
 	rodney.issueLED.On()
+	rodney.runLED.Off()
+	time.Sleep(500 * time.Millisecond)
 }
 
 // Start rodney
 func (rodney *Rodney) Start() error {
 	log.Info("I'm Rodney !")
-	time.Sleep(time.Second)
+	if err := rodney.initMotors(); err != nil {
+		rodney.handleFatal()
+		return err
+	}
 	rodney.runLED.Off()
-	time.Sleep(600 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 	return nil
 }

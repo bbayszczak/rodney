@@ -31,7 +31,7 @@ func (statusLED *StatusLED) loop() {
 		} else if statusLED.state == "blink" {
 			statusLED.led.Toggle()
 		}
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
 	}
 }
 
