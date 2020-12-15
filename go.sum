@@ -2,6 +2,8 @@ github.com/0xcafed00d/joystick v1.0.1 h1:r4p2cRp4MHJWu1gArhGtumbkPxmr3tcOUTFqybE
 github.com/0xcafed00d/joystick v1.0.1/go.mod h1:gzszjNgzP6jtCAeSdC9OqPVO5rO7TJuaw4P7eAjNzx8=
 github.com/bbayszczak/raspberrypi-go-drivers v0.0.0-20201215090340-a8f5821dda3c h1:KK6d70XoxgFqMvU7fKifAtjYL3ut7G1bXonU5imYkcQ=
 github.com/bbayszczak/raspberrypi-go-drivers v0.0.0-20201215090340-a8f5821dda3c/go.mod h1:03ljYElNbYNjCM9h9Sbxu/TStJFJK7HHK9oSUQnN3C4=
+github.com/bbayszczak/raspberrypi-go-drivers v0.0.0-20201215165547-059cdf77c836 h1:YhWRFmIXh1Ssl8z/QIwCvYl/7oSjtVIjQEZw7/apzPA=
+github.com/bbayszczak/raspberrypi-go-drivers v0.0.0-20201215165547-059cdf77c836/go.mod h1:03ljYElNbYNjCM9h9Sbxu/TStJFJK7HHK9oSUQnN3C4=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

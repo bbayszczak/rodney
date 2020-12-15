@@ -18,6 +18,11 @@ Rodney is a 2WD robot controlled by a bluetooth controller
 
 ## Components
 
+  - 2WD robot chassis
+  - raspberry pi
+  - USB battery pack x1
+  - L293D x1
+  - 220Ω resistor x4
   - yellow LED x1
   - white LED x1
   - blue LED x1
