@@ -12,7 +12,8 @@ Rodney is a 2WD robot controlled by a bluetooth controller
 
 ## requirements
 
-works with Raspberry Pi 2, zero, 3 & 4
+  - should work with Raspberry Pi 2, zero, 3 & 4 but tested only on zero
+  - go >= 1.14
 
 ## License
 
