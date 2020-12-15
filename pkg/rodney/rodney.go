@@ -48,6 +48,11 @@ func initMotors() {
 
 }
 
+func (rodney *Rodney) fatalError(err error) {
+	log.WithField("error", err).Fatal("a fatal error occured")
+	rodney.issueLED.On()
+}
+
 // Start rodney
 func (rodney *Rodney) Start() error {
 	log.Info("I'm Rodney !")
