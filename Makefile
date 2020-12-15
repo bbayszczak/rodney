@@ -1,16 +1,16 @@
 NAME			= rodney
 
-GO_RUN		= go run
-GO_BUILD	= env GOOS=linux GOARCH=arm GOARM=6 go build
+GO_RUN			= go run
+GO_BUILD		= env GOOS=linux GOARCH=arm GOARM=6 go build
 
 SRCS			= main.go
 
 RM				= rm -rf
 SCP				= scp
-SSH				=	ssh
+SSH				= ssh
 
-PI_USER		= pi
-PI_HOST		= 192.168.0.36
+PI_USER			= pi
+PI_HOST			= 192.168.0.36
 
 .phony: build transfer run fclean
 
