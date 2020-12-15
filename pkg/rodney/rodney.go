@@ -6,6 +6,7 @@ import (
 	"github.com/bbayszczak/raspberrypi-go-drivers/l293d"
 	"github.com/bbayszczak/raspberrypi-go-drivers/switchprocontroller"
 	"github.com/bbayszczak/rodney/pkg/statusled"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -43,8 +44,13 @@ func NewRodney() *Rodney {
 	return &rodney
 }
 
+func initMotors() {
+
+}
+
 // Start rodney
 func (rodney *Rodney) Start() error {
+	log.Info("I'm Rodney !")
 	time.Sleep(time.Second)
 	rodney.runLED.Off()
 	time.Sleep(600 * time.Millisecond)
