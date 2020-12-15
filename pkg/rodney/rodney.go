@@ -33,7 +33,9 @@ type Rodney struct {
 // NewRodney Creqtes a Rodney instance
 func NewRodney() *Rodney {
 	rodney := Rodney{
-		runLED: statusled.NewStatusLED(23),
+		runLED:       statusled.NewStatusLED(runLEDPin),
+		bluetoothLED: statusled.NewStatusLED(bluetoothLEDPin),
+		issueLED:     statusled.NewStatusLED(issueLEDPin),
 	}
 	rodney.runLED.On()
 	rodney.bluetoothLED.Off()
