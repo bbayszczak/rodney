@@ -10,6 +10,18 @@ Rodney is a 2WD robot controlled by a bluetooth controller
 
   - 2WD
   - controlled by a bluetooth controller
+  - yellow LED on power on
+  - blue LED for bluetooth: blink when not paired, still when paired
+  - white LED when process started/running
+  - red LED when issue
+  - when issue, restart process
+
+## Components
+
+  - yellow LED x1
+  - white LED x1
+  - blue LED x1
+  - red LED x1
 
 ## requirements
 
