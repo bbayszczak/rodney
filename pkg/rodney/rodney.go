@@ -75,6 +75,12 @@ func (rodney *Rodney) Start() error {
 		rodney.handleFatal()
 		return err
 	}
+	// for now, the controller have to be paired each time
+	if err := rodney.getController(); err != nil {
+		rodney.handleFatal()
+		return err
+	}
+	time.Sleep(5 * time.Second)
 	rodney.runLED.Off()
 	time.Sleep(500 * time.Millisecond)
 	return nil
