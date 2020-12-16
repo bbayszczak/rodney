@@ -1,6 +1,7 @@
 package rodney
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/bbayszczak/raspberrypi-go-drivers/l293d"
@@ -68,6 +69,39 @@ func (rodney *Rodney) handleFatal() {
 	time.Sleep(500 * time.Millisecond)
 }
 
+func (rodney *Rodney) mainLoop() {
+	log.Info("starting input listening")
+	rodney.controller.StartListener(0)
+	for {
+		select {
+		case <-rodney.controller.Event:
+			// display button A state
+			aState, _ := rodney.controller.GetButtonState("a")
+			bState, _ := rodney.controller.GetButtonState("b")
+			xState, _ := rodney.controller.GetButtonState("x")
+			yState, _ := rodney.controller.GetButtonState("y")
+			rState, _ := rodney.controller.GetButtonState("r")
+			lState, _ := rodney.controller.GetButtonState("l")
+			zrState, _ := rodney.controller.GetButtonState("zr")
+			zlState, _ := rodney.controller.GetButtonState("zl")
+			fmt.Printf(
+				"A:%d B:%d X:%d Y:%d R:%d L:%d ZR:%d ZL%d\n",
+				aState,
+				bState,
+				xState,
+				yState,
+				rState,
+				lState,
+				zrState,
+				zlState,
+			)
+			// display left stick position
+			leftStick, _ := rodney.controller.GetStick("left")
+			fmt.Printf("x:%f - y:%f\n", leftStick.X, leftStick.Y)
+		}
+	}
+}
+
 // Start rodney
 func (rodney *Rodney) Start() error {
 	log.Info("I'm Rodney !")
@@ -80,7 +114,8 @@ func (rodney *Rodney) Start() error {
 		rodney.handleFatal()
 		return err
 	}
-	time.Sleep(5 * time.Second)
+	rodney.controller = switchprocontroller.NewSwitchProController()
+	rodney.mainLoop()
 	rodney.runLED.Off()
 	time.Sleep(500 * time.Millisecond)
 	return nil
