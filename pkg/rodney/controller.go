@@ -120,3 +120,7 @@ func discoverController() (*device.Device1, error) {
 	}
 	return nil, errors.New("bluetooth: no controller found")
 }
+
+func disconnectController() error {
+	return nil
+}
