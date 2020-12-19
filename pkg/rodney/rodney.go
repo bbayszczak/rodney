@@ -4,9 +4,9 @@ import (
 	"math"
 	"time"
 
+	"github.com/bbayszczak/raspberrypi-go-drivers/l293d"
 	"github.com/bbayszczak/rodney/pkg/statusled"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
-	"github.com/raspberrypi-go-drivers/fs90r"
 	"github.com/raspberrypi-go-drivers/switchprocontroller"
 	log "github.com/sirupsen/logrus"
 )
@@ -25,13 +25,11 @@ const (
 
 // Rodney represent the robot
 type Rodney struct {
-	runLED       *statusled.StatusLED
-	bluetoothLED *statusled.StatusLED
-	issueLED     *statusled.StatusLED
-	// rightMotor   *l293d.Motor
-	// leftMotor    *l293d.Motor
-	rightMotor       *fs90r.FS90R
-	leftMotor        *fs90r.FS90R
+	runLED           *statusled.StatusLED
+	bluetoothLED     *statusled.StatusLED
+	issueLED         *statusled.StatusLED
+	rightMotor       *l293d.Motor
+	leftMotor        *l293d.Motor
 	controller       *switchprocontroller.SwitchProController
 	controllerDevice *device.Device1
 }
@@ -49,28 +47,20 @@ func NewRodney() *Rodney {
 	return &rodney
 }
 
-// func (rodney *Rodney) initMotors() error {
-// 	log.Info("initializing motors")
-// 	var err error
-// 	chip := l293d.NewL293D()
-// 	if rodney.rightMotor, err = chip.NewMotor(1, motor1EnPin, motor1aPin, motor1bPin); err != nil {
-// 		log.WithField("error", err).Error("impossible to initialize motor 1")
-// 		return err
-// 	}
-// 	log.Info("motor 1 initialized")
-// 	if rodney.leftMotor, err = chip.NewMotor(2, motor2EnPin, motor2aPin, motor2bPin); err != nil {
-// 		log.WithField("error", err).Error("impossible to initialize motor 2")
-// 		return err
-// 	}
-// 	log.Info("motor 2 initialized")
-// 	log.Info("all motors successfully initialized")
-// 	return nil
-// }
-
-func (rodney *Rodney) initServos() error {
+func (rodney *Rodney) initMotors() error {
 	log.Info("initializing motors")
-	rodney.rightMotor = fs90r.NewFS90R(12)
-	rodney.leftMotor = fs90r.NewFS90R(13)
+	var err error
+	chip := l293d.NewL293D()
+	if rodney.rightMotor, err = chip.NewMotor(1, motor1EnPin, motor1aPin, motor1bPin); err != nil {
+		log.WithField("error", err).Error("impossible to initialize motor 1")
+		return err
+	}
+	log.Info("motor 1 initialized")
+	if rodney.leftMotor, err = chip.NewMotor(2, motor2EnPin, motor2aPin, motor2bPin); err != nil {
+		log.WithField("error", err).Error("impossible to initialize motor 2")
+		return err
+	}
+	log.Info("motor 2 initialized")
 	log.Info("all motors successfully initialized")
 	return nil
 }
@@ -112,7 +102,7 @@ func (rodney *Rodney) gracefulExit() {
 // Start rodney
 func (rodney *Rodney) Start() error {
 	log.Info("I'm Rodney !")
-	if err := rodney.initServos(); err != nil {
+	if err := rodney.initMotors(); err != nil {
 		rodney.handleFatal()
 		return err
 	}
@@ -133,32 +123,26 @@ func (rodney *Rodney) Start() error {
 	return nil
 }
 
-func getMotorsSpeedFromStick(x float32, y float32) (int8, int8) {
-	var straightSpeed int8
+func getMotorsSpeedFromStick(x float32, y float32) (int, int) {
+	var straightSpeed int
 	// minSpeedPct := 50
 	if x == 0.0 && y == 0.0 {
 		return 0, 0
 	}
 	if y == 0 {
-		turnSpeed := int8(math.RoundToEven(float64(x)))
-		return turnSpeed, turnSpeed
+		turnSpeed := int(math.RoundToEven(float64(x)))
+		return -turnSpeed, -turnSpeed
 	}
-	straightSpeed = int8(math.RoundToEven(float64(y)))
+	straightSpeed = int(math.RoundToEven(float64(y)))
 	if x > 0 {
 		lSpeed := straightSpeed
-		rSpeed := straightSpeed - int8(math.RoundToEven(float64(straightSpeed)/100.0*float64(x)))
+		rSpeed := straightSpeed - int(math.RoundToEven(float64(straightSpeed)/100.0*float64(x)))
 		return lSpeed, -rSpeed
 	} else if x < 0 {
-		lSpeed := straightSpeed + int8(math.RoundToEven(float64(straightSpeed)/100.0*float64(x)))
+		lSpeed := straightSpeed + int(math.RoundToEven(float64(straightSpeed)/100.0*float64(x)))
 		rSpeed := straightSpeed
 		return lSpeed, -rSpeed
 	} else {
 		return straightSpeed, -straightSpeed
 	}
 }
-
-/*
-0     100
-
-50    100
-*/

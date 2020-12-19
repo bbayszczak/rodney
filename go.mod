@@ -3,6 +3,7 @@ module github.com/bbayszczak/rodney
 go 1.15
 
 require (
+	github.com/bbayszczak/raspberrypi-go-drivers v0.0.0-20201218141824-e0fad726a4b5
 	github.com/muka/go-bluetooth v0.0.0-20201211051136-07f31c601d33
 	github.com/raspberrypi-go-drivers/fs90r v0.0.0-20201218211045-1c175a328d41
 	github.com/raspberrypi-go-drivers/led v0.0.0-20201218161429-d542b48c9a0e
