@@ -3,7 +3,7 @@ package statusled
 import (
 	"time"
 
-	driver "github.com/bbayszczak/raspberrypi-go-drivers/led"
+	driver "github.com/raspberrypi-go-drivers/led"
 )
 
 // StatusLED represent a status LED

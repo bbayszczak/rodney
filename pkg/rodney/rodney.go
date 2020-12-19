@@ -4,8 +4,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/bbayszczak/raspberrypi-go-drivers/fs90r"
 	"github.com/bbayszczak/rodney/pkg/statusled"
+	"github.com/muka/go-bluetooth/bluez/profile/device"
+	"github.com/raspberrypi-go-drivers/fs90r"
 	"github.com/raspberrypi-go-drivers/switchprocontroller"
 	log "github.com/sirupsen/logrus"
 )
@@ -29,9 +30,10 @@ type Rodney struct {
 	issueLED     *statusled.StatusLED
 	// rightMotor   *l293d.Motor
 	// leftMotor    *l293d.Motor
-	rightMotor *fs90r.FS90R
-	leftMotor  *fs90r.FS90R
-	controller *switchprocontroller.SwitchProController
+	rightMotor       *fs90r.FS90R
+	leftMotor        *fs90r.FS90R
+	controller       *switchprocontroller.SwitchProController
+	controllerDevice *device.Device1
 }
 
 // NewRodney Creqtes a Rodney instance
@@ -104,7 +106,7 @@ func (rodney *Rodney) mainLoop() error {
 func (rodney *Rodney) gracefulExit() {
 	rodney.runLED.Off()
 	rodney.bluetoothLED.Off()
-	disconnectController()
+	rodney.disconnectController()
 }
 
 // Start rodney

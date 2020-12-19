@@ -42,6 +42,7 @@ func (rodney *Rodney) getController() error {
 		}).Error("impossible to connect to controller")
 		return err
 	}
+	rodney.controllerDevice = controllerDevice
 	rodney.bluetoothLED.On()
 	return nil
 }
@@ -121,6 +122,6 @@ func discoverController() (*device.Device1, error) {
 	return nil, errors.New("bluetooth: no controller found")
 }
 
-func disconnectController() error {
-	return nil
+func (rodney *Rodney) disconnectController() {
+	rodney.controllerDevice.Disconnect()
 }

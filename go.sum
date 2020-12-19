@@ -23,6 +23,10 @@ github.com/paypal/gatt v0.0.0-20151011220935-4ae819d591cf/go.mod h1:+AwQL2mK3Pd3
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/raspberrypi-go-drivers/fs90r v0.0.0-20201218211045-1c175a328d41 h1:ep4Bb75X2tt/KycSDqd8AY/t78ndNSGSMPK2kju8tsc=
+github.com/raspberrypi-go-drivers/fs90r v0.0.0-20201218211045-1c175a328d41/go.mod h1:PuY4DtuPl1lLb4eRCB7Yzpnd56/T3nxdn4pBM+dvMp4=
+github.com/raspberrypi-go-drivers/led v0.0.0-20201218161429-d542b48c9a0e h1:L5/Ht/G5OOLug91+SaHMqQ0DyunbM0bv9y8afkuNYlA=
+github.com/raspberrypi-go-drivers/led v0.0.0-20201218161429-d542b48c9a0e/go.mod h1:/FI2utAHSuKc/Hk+7N5KJ+VY4VPB+RqTp+mXbxqhaJA=
 github.com/raspberrypi-go-drivers/switchprocontroller v0.0.0-20201218150226-b6a9c0eb700a h1:l/7hRPNVwypTZlcoydiO9WNb6LLYlQzWlKdlIHJD4Ug=
 github.com/raspberrypi-go-drivers/switchprocontroller v0.0.0-20201218150226-b6a9c0eb700a/go.mod h1:vnjKaTmJhaNMBYsj+yGB5xwWMMxVbYNkyoZiYbqjz0s=
 github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrfsX/uA88=
