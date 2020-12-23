@@ -94,9 +94,10 @@ func (rodney *Rodney) mainLoop() error {
 }
 
 func (rodney *Rodney) gracefulExit() {
+	rodney.disconnectController()
 	rodney.runLED.Off()
 	rodney.bluetoothLED.Off()
-	rodney.disconnectController()
+	time.Sleep(500 * time.Millisecond)
 }
 
 // Start rodney
