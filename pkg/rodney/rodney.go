@@ -2,6 +2,7 @@ package rodney
 
 import (
 	"math"
+	"os/exec"
 	"time"
 
 	"github.com/bbayszczak/raspberrypi-go-drivers/l293d"
@@ -98,6 +99,11 @@ func (rodney *Rodney) gracefulExit() {
 	rodney.runLED.Off()
 	rodney.bluetoothLED.Off()
 	time.Sleep(500 * time.Millisecond)
+	_, err := exec.Command("/sbin/shutdown", "-h", "now").Output()
+	if err != nil {
+		log.WithField("error", err).Error("cannot shutdown host")
+		rodney.handleFatal()
+	}
 }
 
 // Start rodney
