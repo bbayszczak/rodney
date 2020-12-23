@@ -15,8 +15,8 @@ const (
 	runLEDPin       uint8 = 23
 	bluetoothLEDPin uint8 = 24
 	issueLEDPin     uint8 = 25
-	motor1EnPin     uint8 = 12
-	motor2EnPin     uint8 = 13
+	motor1EnPin     uint8 = 13
+	motor2EnPin     uint8 = 12
 	motor1aPin      uint8 = 17
 	motor1bPin      uint8 = 27
 	motor2aPin      uint8 = 5
@@ -86,7 +86,7 @@ func (rodney *Rodney) mainLoop() error {
 				if ev.Stick.Name == "left" {
 					lSpeed, rSpeed := getMotorsSpeedFromStick(ev.Stick.X, ev.Stick.Y)
 					rodney.leftMotor.SetSpeed(lSpeed)
-					rodney.rightMotor.SetSpeed(rSpeed)
+					rodney.rightMotor.SetSpeed(-rSpeed)
 				}
 			}
 		}
@@ -124,25 +124,44 @@ func (rodney *Rodney) Start() error {
 }
 
 func getMotorsSpeedFromStick(x float32, y float32) (int, int) {
-	var straightSpeed int
-	// minSpeedPct := 50
-	if x == 0.0 && y == 0.0 {
+	speedRatio := 80
+	baseSpeed := 100 - speedRatio
+	xAbs := math.Abs(float64(x))
+	yAbs := math.Abs(float64(y))
+	xRelative := int(math.RoundToEven(xAbs / 100 * float64(speedRatio)))
+	yRelative := int(math.RoundToEven(yAbs / 100 * float64(speedRatio)))
+	if x == 0 && y == 0 {
 		return 0, 0
 	}
+	if x == 0 {
+		if y > 0 {
+			return baseSpeed + yRelative, baseSpeed + yRelative
+		} else if y < 0 {
+			return -(baseSpeed + yRelative), -(baseSpeed + yRelative)
+		}
+	}
 	if y == 0 {
-		turnSpeed := int(math.RoundToEven(float64(x)))
-		return -turnSpeed, -turnSpeed
+		if x > 0 {
+			return baseSpeed + xRelative, -(baseSpeed + xRelative)
+		} else if x < 0 {
+			return -(baseSpeed + xRelative), baseSpeed + yRelative
+		}
 	}
-	straightSpeed = int(math.RoundToEven(float64(y)))
-	if x > 0 {
-		lSpeed := straightSpeed
-		rSpeed := straightSpeed - int(math.RoundToEven(float64(straightSpeed)/100.0*float64(x)))
-		return lSpeed, -rSpeed
-	} else if x < 0 {
-		lSpeed := straightSpeed + int(math.RoundToEven(float64(straightSpeed)/100.0*float64(x)))
-		rSpeed := straightSpeed
-		return lSpeed, -rSpeed
-	} else {
-		return straightSpeed, -straightSpeed
+	speedRatioReduced := 0
+	baseSpeedReduced := 100 - speedRatioReduced
+	yRelativeReduced := int(math.RoundToEven(yAbs / 100 * float64(speedRatioReduced)))
+	if y > 0 {
+		if x > 0 {
+			return baseSpeedReduced + yRelativeReduced, -(xRelative - 100)
+		} else if x < 0 {
+			return -(xRelative - 100), baseSpeedReduced + yRelativeReduced
+		}
+	} else if y < 0 {
+		if x > 0 {
+			return -(baseSpeedReduced - yRelativeReduced), -(-xRelative + 100)
+		} else if x < 0 {
+			return -(-xRelative + 100), -(baseSpeedReduced - yRelativeReduced)
+		}
 	}
+	return 0, 0
 }
