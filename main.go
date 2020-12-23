@@ -10,7 +10,7 @@ import (
 )
 
 func initLogger() {
-	fd, err := os.OpenFile("rodney.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	fd, err := os.OpenFile("/var/log/rodney.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println("Could not open log file : " + err.Error())
 	}
