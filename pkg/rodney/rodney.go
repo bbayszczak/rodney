@@ -151,7 +151,7 @@ func getMotorsSpeedFromStick(x float32, y float32) (int, int) {
 		if x > 0 {
 			return baseSpeed + xRelative, -(baseSpeed + xRelative)
 		} else if x < 0 {
-			return -(baseSpeed + xRelative), baseSpeed + yRelative
+			return -(baseSpeed + xRelative), baseSpeed + xRelative
 		}
 	}
 	speedRatioReduced := 0
