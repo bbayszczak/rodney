@@ -105,7 +105,11 @@ func (rodney *Rodney) changeMinDistance(stickValue float32) {
 
 func (rodney *Rodney) mainLoop() error {
 	log.Info("starting input listening")
-	rodney.controller.StartListener(0)
+	err := rodney.controller.StartListener(0)
+	if err != nil {
+		log.WithField("error", err).Error("impossible to start listening for controller inputs")
+		rodney.gracefulExit()
+	}
 	for {
 		select {
 		case ev := <-rodney.controller.Events:
@@ -159,7 +163,10 @@ func (rodney *Rodney) Start() error {
 	// Avoid a wrong first input
 	time.Sleep(500 * time.Millisecond)
 	rodney.controller = switchprocontroller.NewSwitchProController()
-	rodney.rangeSensor.StartDistanceMonitor()
+	err := rodney.rangeSensor.StartDistanceMonitor()
+	if err != nil {
+		log.WithField("error", err).Error("impossible to start distance sensor")
+	}
 	if err := rodney.mainLoop(); err != nil {
 		rodney.handleFatal()
 		return err

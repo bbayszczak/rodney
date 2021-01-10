@@ -13,7 +13,6 @@ import (
 func (rodney *Rodney) getController() error {
 	log.Info("getting controller")
 	rodney.bluetoothLED.Blink()
-	defer api.Exit()
 	controllerDevice, err := discoverController()
 	if err != nil {
 		return err
@@ -44,6 +43,10 @@ func (rodney *Rodney) getController() error {
 	}
 	rodney.controllerDevice = controllerDevice
 	rodney.bluetoothLED.On()
+	err = api.Exit()
+	if err != nil {
+		log.WithField("error", err).Error("impossible to exit Bluetooth API")
+	}
 	return nil
 }
 
@@ -123,5 +126,8 @@ func discoverController() (*device.Device1, error) {
 }
 
 func (rodney *Rodney) disconnectController() {
-	rodney.controllerDevice.Disconnect()
+	err := rodney.controllerDevice.Disconnect()
+	if err != nil {
+		log.WithField("error", err).Error("impossible to disconnect controller")
+	}
 }
