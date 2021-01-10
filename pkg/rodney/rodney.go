@@ -1,13 +1,15 @@
 package rodney
 
 import (
+	"fmt"
 	"math"
 	"os/exec"
 	"time"
 
-	"github.com/bbayszczak/raspberrypi-go-drivers/l293d"
+	"github.com/bbayszczak/raspberrypi-go-drivers/hcsr04"
 	"github.com/bbayszczak/rodney/pkg/statusled"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
+	"github.com/raspberrypi-go-drivers/l293d"
 	"github.com/raspberrypi-go-drivers/switchprocontroller"
 	log "github.com/sirupsen/logrus"
 )
@@ -22,6 +24,8 @@ const (
 	motor1bPin      uint8 = 27
 	motor2aPin      uint8 = 5
 	motor2bPin      uint8 = 6
+	hcsr04Trigger   uint8 = 21
+	hcsr04Echo      uint8 = 20
 )
 
 // Rodney represent the robot
@@ -33,6 +37,8 @@ type Rodney struct {
 	leftMotor        *l293d.Motor
 	controller       *switchprocontroller.SwitchProController
 	controllerDevice *device.Device1
+	rangeSensor      *hcsr04.HCSR04
+	minDistance      float32
 }
 
 // NewRodney Creqtes a Rodney instance
@@ -41,6 +47,8 @@ func NewRodney() *Rodney {
 		runLED:       statusled.NewStatusLED(runLEDPin),
 		bluetoothLED: statusled.NewStatusLED(bluetoothLEDPin),
 		issueLED:     statusled.NewStatusLED(issueLEDPin),
+		rangeSensor:  hcsr04.NewHCSR04(hcsr04Trigger, hcsr04Echo),
+		minDistance:  0.1,
 	}
 	rodney.runLED.On()
 	rodney.bluetoothLED.Off()
@@ -72,6 +80,29 @@ func (rodney *Rodney) handleFatal() {
 	time.Sleep(500 * time.Millisecond)
 }
 
+func (rodney *Rodney) manageDistance() {
+	distance := rodney.rangeSensor.GetDistance()
+	if distance <= rodney.minDistance {
+		rodney.issueLED.On()
+		if rodney.leftMotor.GetSpeed() > 0 && rodney.rightMotor.GetSpeed() < 0 {
+			rodney.leftMotor.SetSpeed(0)
+			rodney.rightMotor.SetSpeed(0)
+		}
+	} else {
+		rodney.issueLED.Off()
+	}
+}
+
+func (rodney *Rodney) changeMinDistance(stickValue float32) {
+	if stickValue > 0 && rodney.minDistance <= 4 {
+		rodney.minDistance += 0.1
+		log.WithField("minDistance", rodney.minDistance).Info("minimum distance increased")
+	} else if stickValue < 0 && rodney.minDistance > 0.15 {
+		rodney.minDistance -= 0.1
+		log.WithField("minDistance", rodney.minDistance).Info("minimum distance decreased")
+	}
+}
+
 func (rodney *Rodney) mainLoop() error {
 	log.Info("starting input listening")
 	rodney.controller.StartListener(0)
@@ -82,14 +113,21 @@ func (rodney *Rodney) mainLoop() error {
 				if ev.Button.Name == "home" {
 					rodney.gracefulExit()
 					return nil
+				} else if ev.Button.Name == "a" && ev.Button.State == 1 {
+					fmt.Printf("distance: %f\n", rodney.rangeSensor.GetDistance())
 				}
 			} else if ev.Stick != nil {
 				if ev.Stick.Name == "left" {
 					lSpeed, rSpeed := getMotorsSpeedFromStick(ev.Stick.X, ev.Stick.Y)
 					rodney.leftMotor.SetSpeed(lSpeed)
 					rodney.rightMotor.SetSpeed(-rSpeed)
+				} else if ev.Stick.Name == "pad" {
+					rodney.changeMinDistance(ev.Stick.Y)
 				}
+				rodney.manageDistance()
 			}
+		case <-time.After(100 * time.Millisecond):
+			rodney.manageDistance()
 		}
 	}
 }
@@ -121,6 +159,7 @@ func (rodney *Rodney) Start() error {
 	// Avoid a wrong first input
 	time.Sleep(500 * time.Millisecond)
 	rodney.controller = switchprocontroller.NewSwitchProController()
+	rodney.rangeSensor.StartDistanceMonitor()
 	if err := rodney.mainLoop(); err != nil {
 		rodney.handleFatal()
 		return err
